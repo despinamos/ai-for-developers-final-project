@@ -5,3 +5,7 @@ __pycache__/
 
 # Enviromental variables
 .env
+
+# Database
+
+*.db
