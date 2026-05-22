@@ -5,6 +5,8 @@ POST /users/register → create a new user
 GET  /users/me       → current user info (auth required)
 GET  /users/admin    → admin-only endpoint
 GET /users → view all users, admin-only endpoint
+TODO UPDATE /users
+TODO DELETE /users → admin-only
 """
 
 from fastapi import APIRouter, HTTPException, status
@@ -13,7 +15,7 @@ from sqlmodel import select
 from app.dependencies import CurrentUser, SessionDep
 from app.models.user import User
 from app.schemas.user import UserCreate, UserOut
-from app.security import hash_password
+from app.services.auth_service import hash_password
 
 router = APIRouter(prefix="/users", tags=["users"])
 
