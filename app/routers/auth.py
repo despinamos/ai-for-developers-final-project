@@ -12,7 +12,7 @@ from sqlmodel import select
 
 from app.dependencies import SessionDep
 from app.models.user import User
-from app.security import create_access_token, verify_password
+from app.services.auth_service import create_access_token, verify_password
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
