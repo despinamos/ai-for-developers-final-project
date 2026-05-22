@@ -23,6 +23,6 @@ class CodeImproveRequest(BaseModel):
 
 class CodeImproveResponse(BaseModel):
     """Response model for code improver"""
-    explanation: str
+    improve: str
     language: str = "python"
     level: UserSkillLevel = "beginner"
