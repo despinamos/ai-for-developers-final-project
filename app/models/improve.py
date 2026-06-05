@@ -14,6 +14,7 @@ class UserSkillLevel(str, Enum):
 
 class CodeImproveRequest(BaseModel):
     """Request model for code improver"""
+    system_prompt: str
     code: str = Field(..., min_length=10, description="The code to be explained.")
     language: Optional[str] = Field(default="python", description="Programming language")
     level: Optional[UserSkillLevel] = Field(
