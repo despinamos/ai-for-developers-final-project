@@ -4,14 +4,16 @@ from app.prompts.explain_prompt import EXPLAIN_PROMPT
 from app.prompts.review_prompt import REVIEW_PROMPT
 from app.prompts.improve_prompt import IMPROVE_PROMPT
 
+# from app.system_personas import default_tutor
+
 class LLMService:
 
     @staticmethod
-    def explain_code(code: str, language: str, level: str):
+    def explain_code(system_prompt: str, code: str, language: str, level: str):
         messages = [
             {
                 "role": "system",
-                "content": "You are a helpful assistant."
+                "content": system_prompt
             },
             {
                 "role": "user",
@@ -22,11 +24,11 @@ class LLMService:
         return LLMClient.chat(messages)
 
     @staticmethod
-    def review_code(code: str, language: str, level: str):
+    def review_code(system_prompt: str, code: str, language: str, level: str):
         messages = [
             {
                 "role": "system",
-                "content": "You are a helpful assistant."
+                "content": system_prompt
             },
             {
                 "role": "user",
@@ -37,11 +39,11 @@ class LLMService:
         return LLMClient.chat(messages)
 
     @staticmethod
-    def improve_code(code: str, language: str, level: str):
+    def improve_code(system_prompt: str, code: str, language: str, level: str):
         messages = [
             {
                 "role": "system",
-                "content": "You are a helpful assistant."
+                "content": system_prompt
             },
             {
                 "role": "user",
