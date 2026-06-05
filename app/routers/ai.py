@@ -18,20 +18,6 @@ from app.services.llm_service import LLMService
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/ai", tags=["LLM"])
 
-# def build_user_prompt(request: CodeExplainRequest) -> str:
-#     """Build the user prompt for code explanator"""
-#     language = request.language
-#     level = request.level
-#     return f"""Explain the following code step by step:
-#     Language: {language}
-#     User level: {level}
-#     Code to explain:
-#         \"\"\"
-#     {request.text}
-#     \"\"\"
-
-#     Explanation: """
-
 @router.post(
     "/explain",
     response_model=CodeExplainResponse
@@ -42,6 +28,7 @@ def explain_code(request: CodeExplainRequest):
     """
 
     explanation = LLMService.explain_code(
+        system_prompt=request.system_prompt,
         code=request.code,
         language=request.language,
         level=request.level
@@ -63,6 +50,7 @@ def review_code(request: CodeReviewRequest):
     """
 
     review = LLMService.review_code(
+        system_prompt=request.system_prompt,
         code=request.code,
         language=request.language,
         level=request.level
@@ -84,6 +72,7 @@ def improve_code(request: CodeImproveRequest):
     """
 
     improve = LLMService.improve_code(
+        system_prompt=request.system_prompt,
         code=request.code,
         language=request.language,
         level=request.level
