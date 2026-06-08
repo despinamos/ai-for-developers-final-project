@@ -1,0 +1,75 @@
+from fastapi import UploadFile
+
+from app.services.document_service import DocumentService
+from app.services.vector_store_service import VectorStoreService
+from app.llm_client import LLMClient
+
+
+class RAGService:
+
+    @staticmethod
+    async def index_uploaded_file(file: UploadFile, user_id: int | None = None) -> dict:
+        document = await DocumentService.process_uploaded_file(file)
+
+        result = VectorStoreService.add_chunks(
+            chunks=document["chunks"],
+            filename=document["filename"],
+            user_id=user_id
+        )
+
+        return {
+            "filename": document["filename"],
+            "chunk_count": document["chunk_count"],
+            "chunks_stored": result["chunks_stored"],
+            "preview": document["preview"]
+        }
+
+    @staticmethod
+    def answer_question(
+        question: str,
+        user_id: int | None = None,
+        top_k: int = 4
+    ) -> dict:
+        chunks = VectorStoreService.search(
+            query=question,
+            top_k=top_k,
+            user_id=user_id
+        )
+
+        if not chunks:
+            return {
+                "answer": "I could not find any relevant uploaded context.",
+                "sources": []
+            }
+
+        context = "\n\n---\n\n".join(chunks)
+
+        messages = [
+            {
+                "role": "system",
+                "content": (
+                    "You are a helpful RAG assistant for code and documents. "
+                    "Answer only using the provided context. "
+                    "If the answer is not in the context, say so clearly."
+                )
+            },
+            {
+                "role": "user",
+                "content": f"""
+Context:
+{context}
+
+Question:
+{question}
+
+Answer clearly and concisely.
+"""
+            }
+        ]
+
+        answer = LLMClient.chat(messages)
+
+        return {
+            "answer": answer,
+            "sources": chunks
+        }
