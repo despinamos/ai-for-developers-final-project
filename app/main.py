@@ -25,7 +25,7 @@ from starlette.responses import Response
 from app.config import get_settings
 from app.db import create_db_and_tables
 # from app.exceptions import register_exception_handlers
-from app.routers import auth, users, ai
+from app.routers import auth, users, ai, rag
 
 settings = get_settings()
 
@@ -87,6 +87,7 @@ app.add_middleware(TimingMiddleware)
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(ai.router)
+app.include_router(rag.router)
 
 
 # --- Root ---
