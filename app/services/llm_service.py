@@ -4,8 +4,6 @@ from app.prompts.explain_prompt import EXPLAIN_PROMPT
 from app.prompts.review_prompt import REVIEW_PROMPT
 from app.prompts.improve_prompt import IMPROVE_PROMPT
 
-# from app.system_personas import default_tutor
-
 class LLMService:
 
     @staticmethod
