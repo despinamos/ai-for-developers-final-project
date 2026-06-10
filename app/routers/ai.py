@@ -12,8 +12,11 @@ from fastapi import APIRouter, Request, HTTPException
 from app.models.explain import CodeExplainRequest, CodeExplainResponse
 from app.models.review import CodeReviewRequest, CodeReviewResponse
 from app.models.improve import CodeImproveRequest, CodeImproveResponse
-from app.llm_client import LLMClient
+# from app.llm_client import LLMClient
+from app.services.history import HistoryService
 from app.services.llm_service import LLMService
+
+from app.dependencies import CurrentUser, SessionDep
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/ai", tags=["LLM"])
@@ -22,9 +25,14 @@ router = APIRouter(prefix="/ai", tags=["LLM"])
     "/explain",
     response_model=CodeExplainResponse
 )
-def explain_code(request: CodeExplainRequest):
+def explain_code(
+    request: CodeExplainRequest,
+    session: SessionDep,
+    current_user: CurrentUser
+):
     """
     Calls LLM to explain code provided by user.
+    Saves user input and ai response in user's history.
     """
 
     explanation = LLMService.explain_code(
@@ -32,6 +40,14 @@ def explain_code(request: CodeExplainRequest):
         code=request.code,
         language=request.language,
         level=request.level
+    )
+
+    HistoryService.save(
+        session=session,
+        user_id=current_user.id,
+        action="explain",
+        input_text=request.code,
+        ai_response=explanation,
     )
 
     return CodeExplainResponse(
