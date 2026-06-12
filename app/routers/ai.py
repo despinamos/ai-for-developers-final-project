@@ -1,9 +1,5 @@
 """
 AI Router - AI functions endpoints.
-
-TODO POST /ai/explain
-TODO POST /ai/review
-TODO POST /ai/improve
 """
 
 import logging
@@ -60,7 +56,11 @@ def explain_code(
     "/review",
     response_model=CodeReviewResponse
 )
-def review_code(request: CodeReviewRequest):
+def review_code(
+    request: CodeReviewRequest,
+    session: SessionDep,
+    current_user: CurrentUser
+):
     """
     Calls LLM to review code provided by user.
     """
@@ -70,6 +70,14 @@ def review_code(request: CodeReviewRequest):
         code=request.code,
         language=request.language,
         level=request.level
+    )
+
+    HistoryService.save(
+        session=session,
+        user_id=current_user.id,
+        action="review",
+        input_text=request.code,
+        ai_response=review,
     )
 
     return CodeReviewResponse(
@@ -82,7 +90,11 @@ def review_code(request: CodeReviewRequest):
     "/improve",
     response_model=CodeImproveResponse
 )
-def improve_code(request: CodeImproveRequest):
+def improve_code(
+    request: CodeImproveRequest,
+    session: SessionDep,
+    current_user: CurrentUser
+):
     """
     Calls LLM to improve code provided by user.
     """
@@ -92,6 +104,14 @@ def improve_code(request: CodeImproveRequest):
         code=request.code,
         language=request.language,
         level=request.level
+    )
+
+    HistoryService.save(
+        session=session,
+        user_id=current_user.id,
+        action="improve",
+        input_text=request.code,
+        ai_response=improve,
     )
 
     return CodeImproveResponse(
