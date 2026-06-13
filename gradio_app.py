@@ -47,10 +47,10 @@ def login(username, password):
     token = response.json()["access_token"]
     return (
         token, 
-        "Logged in successfully",
+        "✅ Logged in successfully",
         gr.update(visible=False), # auth_area
         gr.update(visible=True), # app_area
-        f"## Hello, {username}", # greeting
+        f"## 🙂 Hello, {username}", # greeting
     )
 
 def logout():
@@ -75,9 +75,9 @@ def register(username, password):
     )
 
     if response.status_code != 201:
-        return f"Error registering user: {response.text}"
+        return f"❌ Error registering user: {response.text}"
     
-    return "Registered successfully. Please Log in using your credentials."
+    return "✅ Registered successfully. Please Log in using your credentials."
 
 def upload_file(file, token):
     if not token:
@@ -235,28 +235,65 @@ with gr.Blocks(title="AI Code Tutor") as demo:
     greeting = gr.Markdown(label="Greeting")
 
     with gr.Group(visible=True) as auth_area:
+
         with gr.Tab("Login"):
             username = gr.Textbox(label="Username")
             password = gr.Textbox(label="Password", type="password")
-            login_btn = gr.Button("Login")
-            login_status = gr.Textbox(label="Status")
-        
+
+            with gr.Row():
+                with gr.Column(scale=2):
+                    pass
+
+                with gr.Column(scale=1):
+                    login_btn = gr.Button(
+                        "Login",
+                        variant="primary",
+                        min_width=150
+                    )
+
+                with gr.Column(scale=2):
+                    pass
+
+            login_status = gr.Markdown()
+
         with gr.Tab("Register"):
             reg_username = gr.Textbox(label="Username")
             reg_password = gr.Textbox(label="Password", type="password")
-            register_btn = gr.Button("Register")
-            register_status = gr.Textbox(label="Status")
-        
+
+            with gr.Row():
+                with gr.Column(scale=2):
+                    pass
+
+                with gr.Column(scale=1):
+                    register_btn = gr.Button(
+                        "Register",
+                        variant="primary",
+                        min_width=150
+                    )
+
+                with gr.Column(scale=2):
+                    pass
+
+            register_status = gr.Markdown()
+
             register_btn.click(
                 register,
                 inputs=[reg_username, reg_password],
                 outputs=[register_status]
-
             )
 
     with gr.Group(visible=False) as app_area:
-
-        logout_btn = gr.Button("Logout")
+        
+        # Top bar
+        with gr.Row():
+            with gr.Column(scale=4):
+                gr.Markdown("### AI Coding Assistant application")
+            with gr.Column(scale=1):
+                logout_btn = gr.Button(
+                    "Logout",
+                    variant="secondary",
+                    min_width=120
+                )
 
         with gr.Tab("Code Assistant"):
 
@@ -267,6 +304,7 @@ with gr.Blocks(title="AI Code Tutor") as demo:
                         label="What do you want to do?",
                         value="Explain"
                     )
+
                 with gr.Column(scale=1):
                     personality_dropdown = gr.Dropdown(
                         choices=list(PERSONALITIES.keys()),
@@ -275,74 +313,156 @@ with gr.Blocks(title="AI Code Tutor") as demo:
                         info="Each personality has a unique system prompt"
                     )
 
-                    gr.Markdown("### Personality Info")
-                    personality_info = gr.Markdown("Select a personality to see details")
+            with gr.Accordion("Personality Info", open=False):
+                personality_info = gr.Markdown("Select a personality to see details")
 
-                    def update_info(personality):
-                        persona = PERSONALITIES.get(personality, {})
-                        prompt_preview = persona.get("system_prompt", "")[:200] + "..."
-                        return f"""
-                        **{persona.get('name', 'Unknown')}**
+                def update_info(personality):
+                    persona = PERSONALITIES.get(personality, {})
+                    prompt_preview = persona.get("system_prompt", "")[:200] + "..."
 
-                        *Greeting:* {persona.get('greeting', 'Hello!')}
+                    return f"""
+    **{persona.get('name', 'Unknown')}**
 
-                        *System Prompt Preview:*
-                        > {prompt_preview}
-                        """
-                    personality_dropdown.change(
-                        update_info,
-                        inputs=[personality_dropdown],
-                        outputs=[personality_info]
-                    )
-            
-            code = gr.Code(label="Paste your code", language="python")
-            language = gr.Textbox(label="Language", value="python")
-            level = gr.Dropdown(
-                ["beginner", "intermediate", "advanced"],
-                label="Level",
-                value="beginner"
+    *Greeting:* {persona.get('greeting', 'Hello!')}
+
+    *System Prompt Preview:*
+
+    > {prompt_preview}
+    """
+
+                personality_dropdown.change(
+                    update_info,
+                    inputs=[personality_dropdown],
+                    outputs=[personality_info]
+                )
+
+            code = gr.Code(
+                label="Paste your code",
+                language="python",
+                lines=12
             )
 
-            run_btn = gr.Button("Run")
-            output = gr.Markdown(label="AI Response")
+            with gr.Row():
+                with gr.Column(scale=1):
+                    language = gr.Textbox(
+                        label="Language",
+                        value="python"
+                    )
+
+                with gr.Column(scale=1):
+                    level = gr.Dropdown(
+                        ["beginner", "intermediate", "advanced"],
+                        label="Level",
+                        value="beginner"
+                    )
+
+            # Centered Run button
+            with gr.Row():
+                with gr.Column(scale=2):
+                    pass
+
+                with gr.Column(scale=1):
+                    run_btn = gr.Button(
+                        "Run",
+                        variant="primary",
+                        min_width=160
+                    )
+
+                with gr.Column(scale=2):
+                    pass
+
+            gr.Markdown("### AI Response")
+            output = gr.Markdown()
 
             run_btn.click(
                 call_ai,
-                inputs=[action, personality_dropdown, code, language, level, token_state],
+                inputs=[
+                    action,
+                    personality_dropdown,
+                    code,
+                    language,
+                    level,
+                    token_state
+                ],
                 outputs=output
             )
 
-        with gr.Tab("Rag Assistant"):
-            gr.Markdown("## Upload a file and ask questions about it")
-            rag_file = gr.File(
-            label="Upload .txt, .md, or .py file",
-            file_types=[".txt", ".md", ".py"]
-            )
+        with gr.Tab("RAG Assistant"):
+            gr.Markdown("Upload a file, index it, then ask questions about its content.")
 
-            upload_rag_btn = gr.Button("Upload and Index File")
-            upload_rag_status = gr.Markdown()
+            with gr.Row():
+                with gr.Column(scale=2):
+                    rag_file = gr.File(
+                        label="Upload .txt, .md, or .py file",
+                        file_types=[".txt", ".md", ".py"]
+                    )
+
+                with gr.Column(scale=1):
+                    gr.Markdown("### Upload Status")
+                    upload_rag_status = gr.Markdown("No file uploaded yet.")
+
+            # Centered upload button
+            with gr.Row():
+                with gr.Column(scale=2):
+                    pass
+
+                with gr.Column(scale=1):
+                    upload_rag_btn = gr.Button(
+                        "Upload and Index",
+                        variant="primary",
+                        min_width=180
+                    )
+
+                with gr.Column(scale=2):
+                    pass
+
             upload_rag_btn.click(
                 upload_file,
                 inputs=[rag_file, token_state],
                 outputs=upload_rag_status
             )
 
-            gr.Markdown("## Ask a question")
+            gr.Markdown("---")
+            gr.Markdown("## Ask a Question")
 
             rag_question = gr.Textbox(
                 label="Question",
-                placeholder="Example: How does authentication work?"
+                placeholder="Example: How does authentication work?",
+                lines=3
             )
 
-            rag_top_k = gr.Slider(
-                minimum=1,
-                maximum=8,
-                value=4,
-                step=1,
-                label="Number of chunks to retrieve"
-            )
+            with gr.Row():
+                with gr.Column(scale=1):
+                    rag_top_k = gr.Slider(
+                        minimum=1,
+                        maximum=8,
+                        value=4,
+                        step=1,
+                        label="Number of chunks to retrieve"
+                    )
 
-            ask_rag_btn = gr.Button("Ask RAG")
+                with gr.Column(scale=1):
+                    gr.Markdown(
+                        "Retrieving more chunks gives the model more context, "
+                        "but may include less relevant information."
+                    )
+
+            # Centered ask button
+            with gr.Row():
+                with gr.Column(scale=2):
+                    pass
+
+                with gr.Column(scale=1):
+                    ask_rag_btn = gr.Button(
+                        "Ask RAG",
+                        variant="primary",
+                        min_width=160
+                    )
+
+                with gr.Column(scale=2):
+                    pass
+
+            gr.Markdown("### RAG Answer")
             rag_answer = gr.Markdown()
 
             ask_rag_btn.click(
@@ -352,14 +472,31 @@ with gr.Blocks(title="AI Code Tutor") as demo:
             )
 
 
-        with gr.Tab("History"):
-            refresh_history_btn = gr.Button("Refresh History")
-            history_output = gr.Markdown(label="Your History")
+        with gr.Tab("My History"):
+            gr.Markdown("View previous requests you sent to the AI.")
+
+            # Centered refresh button
+            with gr.Row():
+                with gr.Column(scale=2):
+                    pass
+
+                with gr.Column(scale=1):
+                    refresh_history_btn = gr.Button(
+                        "Refresh History",
+                        variant="secondary",
+                        min_width=170
+                    )
+
+                with gr.Column(scale=2):
+                    pass
+
+            gr.Markdown("### Previous Interactions")
+            history_output = gr.Markdown("Click **Refresh History** to load your history.")
 
             refresh_history_btn.click(
-            get_history,
-            inputs=[token_state],
-            outputs=history_output
+                get_history,
+                inputs=[token_state],
+                outputs=history_output
             )
 
         logout_btn.click(
