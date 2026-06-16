@@ -78,6 +78,7 @@ def register(username, password):
     return "✅ Registered successfully. Please Log in using your credentials."
 
 def upload_file(file, token):
+    """Upload file for rag."""
     if not token:
         return "Please log in first."
     
@@ -120,6 +121,7 @@ def upload_file(file, token):
     )
 
 def ask_rag(question, top_k, token, document_id):
+    """Ask RAG Assistant a question based on the file selected/uploaded."""
     if not token:
         return "Please log in first."
 
@@ -155,6 +157,37 @@ def ask_rag(question, top_k, token, document_id):
 
     {sources_text if sources_text else "No sources returned."}
     """
+
+def ask_rag_stream(question, top_k, token, document_id):
+    """Ask RAG Assistant a question based on the file selected/uploaded and get streaming response."""
+    if not token:
+        return "Not logged in... Please log in first."
+
+    response = requests.post(
+        f"{API_URL}/rag/ask/stream",
+        json={
+            "question": question,
+             "document_id": document_id,
+            "top_k": int(top_k),
+        },
+        headers={
+            "Authorization": f"Bearer {token}"
+        },
+        stream=True
+    )
+
+    if response.status_code != 200:
+        return f"RAG streaming question failed: {response.text}"
+
+    output = ""
+
+    for chunk in response.iter_content(
+        chunk_size=1024,
+        decode_unicode=True
+    ):
+        if chunk:
+            output += chunk
+            yield output
 
 def get_history(token):
     if not token:
@@ -243,6 +276,41 @@ def call_ai(action, personality, code, language, level, token):
         or data.get("improve")
         or str(data)
     )
+
+def call_ai_stream(action, personality, code, language, level, token):
+    if not token:
+        return "Not logged in... Please log in first."
+    
+    endpoints = {
+        "Explain": "/ai/explain/stream",
+        "Review": "/ai/review/stream",
+        "Improve": "/ai/improve/stream",
+    }
+
+    persona = PERSONALITIES[personality]
+
+    response = requests.post(
+        f"{API_URL}{endpoints[action]}",
+        json={
+            "system_prompt":persona["system_prompt"],
+            "code": code,
+            "language": language,
+            "level": level,
+        },
+        headers={"Authorization": f"Bearer {token}"},
+        stream=True
+    )
+
+    if response.status_code != 200:
+        yield f"Calling ai streaming failed: {response.text}"
+        return
+
+    output = ""
+
+    for chunk in response.iter_content(chunk_size=1024, decode_unicode=True):
+        if chunk:
+            output += chunk
+            yield output
 
 with gr.Blocks(title="AI Code Tutor") as demo:
     token_state = gr.State(value=None)
@@ -392,7 +460,7 @@ with gr.Blocks(title="AI Code Tutor") as demo:
             output = gr.Markdown()
 
             run_btn.click(
-                call_ai,
+                call_ai_stream,
                 inputs=[
                     action,
                     personality_dropdown,
@@ -486,7 +554,7 @@ with gr.Blocks(title="AI Code Tutor") as demo:
             rag_answer = gr.Markdown()
 
             ask_rag_btn.click(
-                ask_rag,
+                ask_rag_stream,
                 inputs=[rag_question, rag_top_k, token_state, rag_document_id_state],
                 outputs=rag_answer
             )
