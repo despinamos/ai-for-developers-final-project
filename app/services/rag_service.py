@@ -76,3 +76,49 @@ Answer clearly and concisely.
             "answer": answer,
             "sources": chunks
         }
+    
+    @staticmethod
+    def answer_question_stream(
+        question: str,
+        document_id: str,
+        user_id: int,
+        top_k: int = 4
+    ):
+        chunks = VectorStoreService.search(
+            query=question,
+            document_id=document_id,
+            top_k=top_k,
+            user_id=user_id
+        )
+
+        if not chunks:
+            yield "I could not find any relevant uploaded context."
+            return
+
+        context = "\n\n---\n\n".join(chunks)
+
+        messages = [
+            {
+                "role": "system",
+                "content": (
+                    "You are a helpful RAG assistant. "
+                    "Answer only using the provided context. "
+                    "If the answer is not in the context, say so clearly."
+                )
+            },
+            {
+                "role": "user",
+                "content": f"""
+    Context:
+    {context}
+
+    Question:
+    {question}
+
+    Answer clearly and concisely.
+    """
+            }
+        ]
+
+        for chunk in LLMClient.stream_chat(messages):
+            yield chunk
