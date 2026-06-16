@@ -18,6 +18,7 @@ class RAGService:
         )
 
         return {
+            "document_id": result["document_id"],
             "filename": document["filename"],
             "chunk_count": document["chunk_count"],
             "chunks_stored": result["chunks_stored"],
@@ -27,11 +28,13 @@ class RAGService:
     @staticmethod
     def answer_question(
         question: str,
+        document_id: str,
         user_id: int | None = None,
         top_k: int = 4
     ) -> dict:
         chunks = VectorStoreService.search(
             query=question,
+            document_id=document_id,
             top_k=top_k,
             user_id=user_id
         )
