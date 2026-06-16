@@ -3,8 +3,6 @@ import requests
 import json
 from pathlib import Path
 
-# TODO RAG, fix ui, admin page
-
 API_URL = "http://127.0.0.1:8000"
 
 def load_personalities():
@@ -105,20 +103,23 @@ def upload_file(file, token):
 
     data = response.json()
 
-    return f"""
-    ### File indexed successfully
+    return (
+        f"""
+        ### File indexed successfully
 
-    **Filename:** {data.get("filename")}
+        **Filename:** {data.get("filename")}
 
-    **Chunks indexed:** {data.get("chunk_count") or data.get("chunks_stored")}
+        **Chunks indexed:** {data.get("chunk_count") or data.get("chunks_stored")}
 
-    **Preview:**
-    ```text
-    {data.get("preview", "")}
+        **Preview:**
+        ```text
+        {data.get("preview", "")}
 
-    """
+        """,
+        data["document_id"]
+    )
 
-def ask_rag(question, top_k, token):
+def ask_rag(question, top_k, token, document_id):
     if not token:
         return "Please log in first."
 
@@ -126,7 +127,8 @@ def ask_rag(question, top_k, token):
         f"{API_URL}/rag/ask",
         json={
             "question": question,
-            "top_k": int(top_k)
+             "document_id": document_id,
+            "top_k": int(top_k),
         },
         headers={
             "Authorization": f"Bearer {token}"
@@ -173,23 +175,37 @@ def get_history(token):
     if not history:
         return "No history yet."
 
-    output = ""
+    html = ""
 
     for item in history:
-        output += f"""
-        ### {item.get("action", "Unknown action")}
+        html += f"""
+        <div style="
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            background: #6E6E6E;
+        ">
+            <h3>{item.get("action", "Unknown action")}</h3>
 
-        **Date:** {item.get("created_at", "")}
+            <p><b>{item.get("created_at", "")}</b></p>
 
-        **Input:**
-        ```python
-        {item.get("input_text", "")}
-        AI Response:
-        {item.get("ai_response", "")}
+            <details>
+                <summary><b>User Input</b></summary>
+                <pre style="white-space: pre-wrap;">{item.get("input_text", "")}</pre>
+            </details>
+
+            <details>
+                <summary><b>AI Response</b></summary>
+                <div style="white-space: pre-wrap;">
+                    {item.get("ai_response", "")}
+                </div>
+            </details>
+        </div>
 
         """
 
-    return output
+    return html
 
 def call_ai(action, personality, code, language, level, token):
     if not token:
@@ -224,12 +240,13 @@ def call_ai(action, personality, code, language, level, token):
     return (
         data.get("explanation")
         or data.get("review")
-        or data.get("improvement")
+        or data.get("improve")
         or str(data)
     )
 
 with gr.Blocks(title="AI Code Tutor") as demo:
     token_state = gr.State(value=None)
+    rag_document_id_state = gr.State(value=None)
 
     gr.Markdown("# AI Code Tutor")
     greeting = gr.Markdown(label="Greeting")
@@ -287,7 +304,7 @@ with gr.Blocks(title="AI Code Tutor") as demo:
         # Top bar
         with gr.Row():
             with gr.Column(scale=4):
-                gr.Markdown("### AI Coding Assistant application")
+                gr.Markdown("")
             with gr.Column(scale=1):
                 logout_btn = gr.Button(
                     "Logout",
@@ -419,7 +436,10 @@ with gr.Blocks(title="AI Code Tutor") as demo:
             upload_rag_btn.click(
                 upload_file,
                 inputs=[rag_file, token_state],
-                outputs=upload_rag_status
+                outputs=[
+                    upload_rag_status,
+                    rag_document_id_state
+                ]
             )
 
             gr.Markdown("---")
@@ -467,7 +487,7 @@ with gr.Blocks(title="AI Code Tutor") as demo:
 
             ask_rag_btn.click(
                 ask_rag,
-                inputs=[rag_question, rag_top_k, token_state],
+                inputs=[rag_question, rag_top_k, token_state, rag_document_id_state],
                 outputs=rag_answer
             )
 
@@ -491,7 +511,7 @@ with gr.Blocks(title="AI Code Tutor") as demo:
                     pass
 
             gr.Markdown("### Previous Interactions")
-            history_output = gr.Markdown("Click **Refresh History** to load your history.")
+            history_output = gr.HTML("Click **Refresh History** to load your history.")
 
             refresh_history_btn.click(
                 get_history,
