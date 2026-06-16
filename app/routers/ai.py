@@ -5,10 +5,9 @@ AI Router - AI functions endpoints.
 import logging
 from fastapi import APIRouter, Request, HTTPException
 
-from app.models.explain import CodeExplainRequest, CodeExplainResponse
-from app.models.review import CodeReviewRequest, CodeReviewResponse
-from app.models.improve import CodeImproveRequest, CodeImproveResponse
-# from app.llm_client import LLMClient
+from app.schemas.explain import CodeExplainRequest, CodeExplainResponse
+from app.schemas.review import CodeReviewRequest, CodeReviewResponse
+from app.schemas.improve import CodeImproveRequest, CodeImproveResponse
 from app.services.history import HistoryService
 from app.services.llm_service import LLMService
 
