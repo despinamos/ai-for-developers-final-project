@@ -49,11 +49,19 @@ def login(username, password):
         gr.update(visible=False), # auth_area
         gr.update(visible=True), # app_area
         f"## 🙂 Hello, {username}", # greeting
+        "", # llm question textbox
+        "", # llm assistant output
+        "", # rag question textbox
+        "", # rag assistant output 
+        "No file uploaded yet.", # rag upload output
+        "Click **Refresh History** to load your history.", # history message
+        None # rag_document_id state
     )
 
 def logout():
     """Logs current user out."""
     return (
+        None,
         None,
         "Logged out",
         gr.update(visible=True), # auth_area
@@ -406,14 +414,14 @@ with gr.Blocks(title="AI Code Tutor") as demo:
                     prompt_preview = persona.get("system_prompt", "")[:200] + "..."
 
                     return f"""
-    **{persona.get('name', 'Unknown')}**
+                    **{persona.get('name', 'Unknown')}**
 
-    *Greeting:* {persona.get('greeting', 'Hello!')}
+                    *Greeting:* {persona.get('greeting', 'Hello!')}
 
-    *System Prompt Preview:*
+                    *System Prompt Preview:*
 
-    > {prompt_preview}
-    """
+                    > {prompt_preview}
+                    """
 
                 personality_dropdown.change(
                     update_info,
@@ -589,13 +597,32 @@ with gr.Blocks(title="AI Code Tutor") as demo:
 
         logout_btn.click(
             logout,
-            outputs=[token_state, login_status, auth_area, app_area, greeting]
+            outputs=[
+                token_state, 
+                rag_document_id_state, 
+                login_status, auth_area, 
+                app_area, 
+                greeting
+            ]
         )
 
         login_btn.click(
                 login,
                 inputs=[username, password],
-                outputs=[token_state, login_status, auth_area, app_area, greeting]
+                outputs=[
+                    token_state, 
+                    login_status, 
+                    auth_area, 
+                    app_area, 
+                    greeting,
+                    code,
+                    output,
+                    rag_question,
+                    rag_answer,
+                    upload_rag_status,
+                    history_output,
+                    rag_document_id_state
+                ]
             )
 
 demo.launch()
