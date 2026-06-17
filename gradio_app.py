@@ -132,12 +132,28 @@ def ask_rag(question, top_k, token, document_id):
     """Ask RAG Assistant a question based on the file selected/uploaded."""
     if not token:
         return "Please log in first."
+    
+    if not document_id:
+        return """
+        ## No document selected
+
+        📄 Please upload and index a file first before using RAG Assistant.
+
+        Steps:
+        1. Upload a document (`.txt`, `.md`, or `.py` file)
+        2. Click **Upload and Index**
+        3. Wait for indexing to complete
+        4. Ask your question
+
+        You also select an already existing and indexed file.
+        💡 RAG answers questions based only on the currently selected document.
+        """
 
     response = requests.post(
         f"{API_URL}/rag/ask",
         json={
             "question": question,
-             "document_id": document_id,
+            "document_id": document_id,
             "top_k": int(top_k),
         },
         headers={
@@ -169,7 +185,25 @@ def ask_rag(question, top_k, token, document_id):
 def ask_rag_stream(question, top_k, token, document_id):
     """Ask RAG Assistant a question based on the file selected/uploaded and get streaming response."""
     if not token:
-        return "Not logged in... Please log in first."
+        yield "Not logged in... Please log in first."
+        return
+    
+    if not document_id:
+        yield """
+        ## No document selected
+
+        📄 Please upload and index a file first before using RAG Assistant.
+
+        Steps:
+        1. Upload a document (`.txt`, `.md`, or `.py` file)
+        2. Click **Upload and Index**
+        3. Wait for indexing to complete
+        4. Ask your question
+
+        You also select an already existing and indexed file.
+        💡 RAG answers questions based only on the currently selected document.
+        """
+        return
 
     response = requests.post(
         f"{API_URL}/rag/ask/stream",
@@ -198,6 +232,7 @@ def ask_rag_stream(question, top_k, token, document_id):
             yield output
 
 def get_history(token):
+    """Retrieve user history records."""
     if not token:
         return "Not logged in... Please log in first."
     
@@ -249,6 +284,7 @@ def get_history(token):
     return html
 
 def call_ai(action, personality, code, language, level, token):
+    """Call AI and get response based on the action selected."""
     if not token:
         return "Not logged in... Please log in first."
 
@@ -286,8 +322,10 @@ def call_ai(action, personality, code, language, level, token):
     )
 
 def call_ai_stream(action, personality, code, language, level, token):
+    """Call AI and get response streaming based on the action selected."""
     if not token:
-        return "Not logged in... Please log in first."
+        yield "Not logged in... Please log in first."
+        return
     
     endpoints = {
         "Explain": "/ai/explain/stream",
