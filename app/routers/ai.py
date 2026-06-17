@@ -1,9 +1,17 @@
 """
 AI Router - AI functions endpoints.
+
+POST /ai/explain → explain user's code
+POST /ai/review → review user's code
+POST /ai/improve → improve user's code
+
+POST /ai/explain/stream → explain user's code with stream response
+POST /ai/review/stream → review user's code with stream response
+POST /ai/improve/stream → improve user's code with stream response
 """
 
 import logging
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 
 from app.schemas.explain import CodeExplainRequest, CodeExplainResponse
@@ -31,26 +39,41 @@ def explain_code(
     Saves user input and ai response in user's history.
     """
 
-    explanation = LLMService.explain_code(
-        system_prompt=request.system_prompt,
-        code=request.code,
-        language=request.language,
-        level=request.level
-    )
+    try:
+        explanation = LLMService.explain_code(
+            system_prompt=request.system_prompt,
+            code=request.code,
+            language=request.language,
+            level=request.level
+        )
 
-    HistoryService.save(
-        session=session,
-        user_id=current_user.id,
-        action="explain",
-        input_text=request.code,
-        ai_response=explanation,
-    )
+        HistoryService.save(
+            session=session,
+            user_id=current_user.id,
+            action="explain",
+            input_text=request.code,
+            ai_response=explanation,
+        )
 
-    return CodeExplainResponse(
-        explanation=explanation,
-        language=request.language,
-        level=request.level
-    )
+        return CodeExplainResponse(
+            explanation=explanation,
+            language=request.language,
+            level=request.level
+        )
+    
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+
+    except Exception:
+        logger.exception("Explain code failed")
+
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to explain code."
+        )
 
 @router.post("/explain/stream")
 def explain_code_stream(
@@ -58,30 +81,43 @@ def explain_code_stream(
     session: SessionDep,
     current_user: CurrentUser
 ):
-    def generate():
-        full_response = ""
+    """
+    Calls LLM to explain code provided by user.
+    Saves user input and ai response in user's history.
+    Returns streaming answer.
+    """
+    try:
+        def generate():
+            full_response = ""
 
-        for chunk in LLMService.explain_code_stream(
-            system_prompt=request.system_prompt,
-            code=request.code,
-            language=request.language,
-            level=request.level
-        ):
-            full_response += chunk
-            yield chunk
+            for chunk in LLMService.explain_code_stream(
+                system_prompt=request.system_prompt,
+                code=request.code,
+                language=request.language,
+                level=request.level
+            ):
+                full_response += chunk
+                yield chunk
 
-        HistoryService.save(
-            session=session,
-            user_id=current_user.id,
-            action="explain",
-            input_text=request.code,
-            ai_response=full_response,
+            HistoryService.save(
+                session=session,
+                user_id=current_user.id,
+                action="explain",
+                input_text=request.code,
+                ai_response=full_response,
+            )
+
+        return StreamingResponse(
+            generate(),
+            media_type="text/plain"
         )
+    except Exception:
+        logger.exception("Explain code stream failed")
 
-    return StreamingResponse(
-        generate(),
-        media_type="text/plain"
-    )
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to stream code explanation."
+        )
 
 @router.post(
     "/review",
@@ -94,28 +130,42 @@ def review_code(
 ):
     """
     Calls LLM to review code provided by user.
+    Saves user input and AI response in user history.
     """
+    try:
+        review = LLMService.review_code(
+            system_prompt=request.system_prompt,
+            code=request.code,
+            language=request.language,
+            level=request.level
+        )
 
-    review = LLMService.review_code(
-        system_prompt=request.system_prompt,
-        code=request.code,
-        language=request.language,
-        level=request.level
-    )
+        HistoryService.save(
+            session=session,
+            user_id=current_user.id,
+            action="review",
+            input_text=request.code,
+            ai_response=review,
+        )
 
-    HistoryService.save(
-        session=session,
-        user_id=current_user.id,
-        action="review",
-        input_text=request.code,
-        ai_response=review,
-    )
+        return CodeReviewResponse(
+            review=review,
+            language=request.language,
+            level=request.level
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
 
-    return CodeReviewResponse(
-        review=review,
-        language=request.language,
-        level=request.level
-    )
+    except Exception:
+        logger.exception("Review code failed")
+
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to review code."
+        )
 
 @router.post("/review/stream")
 def review_code_stream(
@@ -123,30 +173,43 @@ def review_code_stream(
     session: SessionDep,
     current_user: CurrentUser
 ):
-    def generate():
-        full_response = ""
+    """
+    Calls LLM to review code provided by user.
+    Saves user input and ai response in user's history.
+    Returns streaming answer.
+    """
+    try:
+        def generate():
+            full_response = ""
 
-        for chunk in LLMService.review_code_stream(
-            system_prompt=request.system_prompt,
-            code=request.code,
-            language=request.language,
-            level=request.level
-        ):
-            full_response += chunk
-            yield chunk
+            for chunk in LLMService.review_code_stream(
+                system_prompt=request.system_prompt,
+                code=request.code,
+                language=request.language,
+                level=request.level
+            ):
+                full_response += chunk
+                yield chunk
 
-        HistoryService.save(
-            session=session,
-            user_id=current_user.id,
-            action="review",
-            input_text=request.code,
-            ai_response=full_response,
+            HistoryService.save(
+                session=session,
+                user_id=current_user.id,
+                action="review",
+                input_text=request.code,
+                ai_response=full_response,
+            )
+
+        return StreamingResponse(
+            generate(),
+            media_type="text/plain"
         )
+    except Exception:
+        logger.exception("Review code stream failed")
 
-    return StreamingResponse(
-        generate(),
-        media_type="text/plain"
-    )
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to stream code review."
+        )
 
 @router.post(
     "/improve",
@@ -159,28 +222,43 @@ def improve_code(
 ):
     """
     Calls LLM to improve code provided by user.
+    Saves user input and AI response to user history.
     """
 
-    improve = LLMService.improve_code(
-        system_prompt=request.system_prompt,
-        code=request.code,
-        language=request.language,
-        level=request.level
-    )
+    try:
+        improve = LLMService.improve_code(
+            system_prompt=request.system_prompt,
+            code=request.code,
+            language=request.language,
+            level=request.level
+        )
 
-    HistoryService.save(
-        session=session,
-        user_id=current_user.id,
-        action="improve",
-        input_text=request.code,
-        ai_response=improve,
-    )
+        HistoryService.save(
+            session=session,
+            user_id=current_user.id,
+            action="improve",
+            input_text=request.code,
+            ai_response=improve,
+        )
 
-    return CodeImproveResponse(
-        improve=improve,
-        language=request.language,
-        level=request.level
-    )
+        return CodeImproveResponse(
+            improve=improve,
+            language=request.language,
+            level=request.level
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+
+    except Exception:
+        logger.exception("Improve code failed")
+
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to improve code."
+        )
 
 @router.post("/improve/stream")
 def improve_code_stream(
@@ -188,27 +266,40 @@ def improve_code_stream(
     session: SessionDep,
     current_user: CurrentUser
 ):
-    def generate():
-        full_response = ""
+    """
+    Calls LLM to improve code provided by user.
+    Saves user input and ai response in user's history.
+    Returns streaming answer.
+    """
+    try:
+        def generate():
+            full_response = ""
 
-        for chunk in LLMService.improve_code_stream(
-            system_prompt=request.system_prompt,
-            code=request.code,
-            language=request.language,
-            level=request.level
-        ):
-            full_response += chunk
-            yield chunk
+            for chunk in LLMService.improve_code_stream(
+                system_prompt=request.system_prompt,
+                code=request.code,
+                language=request.language,
+                level=request.level
+            ):
+                full_response += chunk
+                yield chunk
 
-        HistoryService.save(
-            session=session,
-            user_id=current_user.id,
-            action="improve",
-            input_text=request.code,
-            ai_response=full_response,
+            HistoryService.save(
+                session=session,
+                user_id=current_user.id,
+                action="improve",
+                input_text=request.code,
+                ai_response=full_response,
+            )
+
+        return StreamingResponse(
+            generate(),
+            media_type="text/plain"
         )
+    except Exception:
+        logger.exception("Improve code stream failed")
 
-    return StreamingResponse(
-        generate(),
-        media_type="text/plain"
-    )
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to stream code improvement."
+        )
