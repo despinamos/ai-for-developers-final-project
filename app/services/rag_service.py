@@ -105,9 +105,10 @@ class RAGService:
             {
                 "role": "system",
                 "content": (
-                    "You are a helpful RAG assistant. "
-                    "Answer only using the provided context. "
-                    "If the answer is not in the context, say so clearly."
+                    """
+                    You are a helpful RAG assistant.
+                    Answer only using the provided context.
+                    If the answer is not in the context, say so clearly."""
                 )
             },
             {
@@ -126,3 +127,8 @@ class RAGService:
 
         for chunk in LLMClient.stream_chat(messages):
             yield chunk
+
+        yield "\n\n---\n\n## Retrieved Sources\n" 
+        
+        for index, source in enumerate(chunks, start=1):
+            yield f"\n### Source {index}\n```text\n{source[:1000]}\n```\n"
