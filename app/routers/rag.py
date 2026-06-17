@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 @router.post("/upload", response_model=RAGUploadResponse)
 async def upload_file(current_user: CurrentUser, file: UploadFile = File(...)):
+    """Uploads a file to RAG assistant."""
     try:
         result = await RAGService.index_uploaded_file(
             file=file,
@@ -48,6 +49,7 @@ async def upload_file(current_user: CurrentUser, file: UploadFile = File(...)):
 
 @router.post("/ask", response_model=RAGQuestionResponse)
 def ask_question(request: RAGQuestionRequest, current_user: CurrentUser, session: SessionDep):
+    """Sends question to RAG assistant with simple response."""
     try:
         result = RAGService.answer_question(
             question=request.question,
@@ -86,6 +88,7 @@ def ask_question_stream(
     current_user: CurrentUser,
     session: SessionDep
 ):
+    """Sends question to RAG assistant and returns a streaming response."""
     try:
         def generate():
             full_response = ""
