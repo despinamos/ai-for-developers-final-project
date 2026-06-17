@@ -50,6 +50,13 @@ async def upload_file(current_user: CurrentUser, file: UploadFile = File(...)):
 @router.post("/ask", response_model=RAGQuestionResponse)
 def ask_question(request: RAGQuestionRequest, current_user: CurrentUser, session: SessionDep):
     """Sends question to RAG assistant with simple response."""
+
+    if not request.document_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Please upload or select a document first."
+        )
+
     try:
         result = RAGService.answer_question(
             question=request.question,
@@ -89,6 +96,13 @@ def ask_question_stream(
     session: SessionDep
 ):
     """Sends question to RAG assistant and returns a streaming response."""
+
+    if not request.document_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Please upload or select a document first."
+        )
+    
     try:
         def generate():
             full_response = ""
