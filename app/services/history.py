@@ -11,6 +11,7 @@ class HistoryService:
         input_text: str,
         ai_response: str
     ):
+        """Save user history for each request (user id, action, user input and ai response)"""
         history = History(
             user_id=user_id,
             action=action,

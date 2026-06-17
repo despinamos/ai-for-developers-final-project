@@ -9,6 +9,7 @@ class RAGService:
 
     @staticmethod
     async def index_uploaded_file(file: UploadFile, user_id: int | None = None) -> dict:
+        """Indexes user uploaded file into chunks."""
         document = await DocumentService.process_uploaded_file(file)
 
         result = VectorStoreService.add_chunks(
@@ -32,6 +33,7 @@ class RAGService:
         user_id: int | None = None,
         top_k: int = 4
     ) -> dict:
+        """Answer user question using information based on chunks retrieved from the user uploaded/selected file."""
         chunks = VectorStoreService.search(
             query=question,
             document_id=document_id,
@@ -59,14 +61,14 @@ class RAGService:
             {
                 "role": "user",
                 "content": f"""
-Context:
-{context}
+                Context:
+                {context}
 
-Question:
-{question}
+                Question:
+                {question}
 
-Answer clearly and concisely.
-"""
+                Answer clearly and concisely.
+                """
             }
         ]
 
@@ -84,6 +86,8 @@ Answer clearly and concisely.
         user_id: int,
         top_k: int = 4
     ):
+        """Answer user question using information based on chunks retrieved from the user uploaded/selected file.
+        Offers response in streams."""
         chunks = VectorStoreService.search(
             query=question,
             document_id=document_id,

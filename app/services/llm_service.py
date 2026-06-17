@@ -8,6 +8,7 @@ class LLMService:
 
     @staticmethod
     def explain_code(system_prompt: str, code: str, language: str, level: str):
+        """Explains code given by user with simple llm chat method."""
         messages = [
             {
                 "role": "system",
@@ -23,6 +24,7 @@ class LLMService:
     
     @staticmethod
     def explain_code_stream(system_prompt: str, code: str, language: str, level: str):
+        """Explains code given by user with streaming llm method."""
         messages = [
             {
                 "role": "system",
@@ -38,6 +40,7 @@ class LLMService:
 
     @staticmethod
     def review_code(system_prompt: str, code: str, language: str, level: str):
+        """Reviews code given by user with simple llm chat method."""
         messages = [
             {
                 "role": "system",
@@ -53,6 +56,7 @@ class LLMService:
     
     @staticmethod
     def review_code_stream(system_prompt: str, code: str, language: str, level: str):
+        """Reviews code given by user with streaming llm method."""
         messages = [
             {
                 "role": "system",
@@ -68,6 +72,7 @@ class LLMService:
 
     @staticmethod
     def improve_code(system_prompt: str, code: str, language: str, level: str):
+        """Improves code given by user with simple llm chat method."""
         messages = [
             {
                 "role": "system",
@@ -83,6 +88,7 @@ class LLMService:
     
     @staticmethod
     def improve_code_stream(system_prompt: str, code: str, language: str, level: str):
+        """Improves code given by user with streaming llm method."""
         messages = [
             {
                 "role": "system",

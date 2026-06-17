@@ -5,8 +5,6 @@ POST /users/register → create a new user
 GET  /users/me       → current user info (auth required)
 GET  /users/admin    → admin-only endpoint
 GET /users → view all users, admin-only endpoint
-TODO UPDATE /users
-TODO DELETE /users → admin-only
 """
 
 from fastapi import APIRouter, HTTPException, status
