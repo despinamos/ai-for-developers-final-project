@@ -96,4 +96,4 @@ app.include_router(history.router)
 @app.get("/", tags=["root"])
 def root():
     """Health check / welcome endpoint."""
-    return {"message": "FastAPI Tutorial — Organized App", "docs": "/docs"}
+    return {"message": "AI Coding Tutor App", "docs": "/docs"}
