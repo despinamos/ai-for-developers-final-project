@@ -1,10 +1,12 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, status
 from fastapi.responses import StreamingResponse
+from sqlmodel import select
 
 import logging
 from app.dependencies import CurrentUser, SessionDep
 from app.services.rag_service import RAGService
 from app.services.history import HistoryService
+from app.models.rag_document import RagDocument
 from app.schemas.rag import (
     RAGQuestionRequest,
     RAGQuestionResponse,
@@ -16,13 +18,28 @@ logger = logging.getLogger(__name__)
 
 
 @router.post("/upload", response_model=RAGUploadResponse)
-async def upload_file(current_user: CurrentUser, file: UploadFile = File(...)):
+async def upload_file(
+    current_user: CurrentUser, 
+    session: SessionDep, 
+    file: UploadFile = File(...)
+):
     """Uploads a file to RAG assistant."""
     try:
         result = await RAGService.index_uploaded_file(
             file=file,
             user_id=current_user.id
         )
+
+        doc = RagDocument(
+            document_id=result["document_id"],
+            user_id=current_user.id,
+            filename=result["filename"],
+            chunk_count=result["chunk_count"],
+        )
+
+        session.add(doc)
+        session.commit()
+        session.refresh(doc)
 
         return RAGUploadResponse(**result)
 
@@ -45,10 +62,32 @@ async def upload_file(current_user: CurrentUser, file: UploadFile = File(...)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"File upload failed: {str(e)}"
         )
+    
+@router.get("/documents")
+def get_user_documents(
+    current_user: CurrentUser,
+    session: SessionDep
+):
+    """Returns user uploaded documents."""
+    try: 
+        documents = session.exec(
+            select(RagDocument)
+            .where(RagDocument.user_id == current_user.id)
+            .order_by(RagDocument.created_at.desc())
+        ).all()
+
+        return documents
+    
+    except Exception as e:
+        print("Error returning user documents: ",e)
 
 
 @router.post("/ask", response_model=RAGQuestionResponse)
-def ask_question(request: RAGQuestionRequest, current_user: CurrentUser, session: SessionDep):
+def ask_question(
+    request: RAGQuestionRequest, 
+    current_user: CurrentUser, 
+    session: SessionDep
+):
     """Sends question to RAG assistant with simple response."""
 
     if not request.document_id:
