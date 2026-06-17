@@ -128,6 +128,40 @@ def upload_file(file, token):
         data["document_id"]
     )
 
+def load_rag_documents(token):
+    """Loads documents user has uploaded in Rag Assistant."""
+    if not token:
+        return gr.update(choices=[], value=None), None, "Please log in first."
+
+    response = requests.get(
+        f"{API_URL}/rag/documents",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+
+    if response.status_code != 200:
+        return gr.update(choices=[], value=None), None, f"Error loading documents: {response.text}"
+
+    docs = response.json()
+
+    if not docs:
+        return gr.update(choices=[], value=None), None, "No uploaded files yet."
+
+    choices = [
+        (f"{doc['filename']} ({doc['chunk_count']} chunks)", doc["document_id"])
+        for doc in docs
+    ]
+
+    first_doc_id = docs[0]["document_id"]
+
+    return (
+        gr.update(choices=choices, value=first_doc_id),
+        first_doc_id,
+        f"Loaded {len(docs)} document(s)."
+    )
+
+def select_rag_document(document_id):
+    return document_id
+
 def ask_rag(question, top_k, token, document_id):
     """Ask RAG Assistant a question based on the file selected/uploaded."""
     if not token:
@@ -554,6 +588,31 @@ with gr.Blocks(title="AI Code Tutor") as demo:
                     upload_rag_status,
                     rag_document_id_state
                 ]
+            )
+
+            rag_document_dropdown = gr.Dropdown(
+            label="Choose an uploaded file",
+            choices=[],
+            value=None
+            )
+
+            refresh_docs_btn = gr.Button("Refresh Files")
+            rag_document_status = gr.Markdown()
+
+            refresh_docs_btn.click(
+                load_rag_documents,
+                inputs=[token_state],
+                outputs=[
+                    rag_document_dropdown,
+                    rag_document_id_state,
+                    rag_document_status
+                ]
+            )
+
+            rag_document_dropdown.change(
+                select_rag_document,
+                inputs=[rag_document_dropdown],
+                outputs=[rag_document_id_state]
             )
 
             gr.Markdown("---")
