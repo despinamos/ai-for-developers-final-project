@@ -1,3 +1,12 @@
+"""
+RAG router - RAG Assistant endpoints
+
+POST /rag/upload → upload new document
+GET /rag/documents → get documents uploaded by current user
+POST /rag/ask → ask a question to Rag Assistant and return simple answer
+POST /rag/ask/stream → ask a question to Rag Assistant and return streaming response
+"""
+
 from fastapi import APIRouter, UploadFile, File, HTTPException, status
 from fastapi.responses import StreamingResponse
 from sqlmodel import select
