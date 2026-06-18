@@ -54,4 +54,4 @@ def admin_only(user: CurrentUser):
     """Admin-only endpoint. Returns 403 for non-admin users."""
     if not user.is_admin:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Admins only")
-    return {"secret": "42", "message": f"Welcome, admin {user.username}!"}
+    return {"message": f"Welcome, admin {user.username}!"}
