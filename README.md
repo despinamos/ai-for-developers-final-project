@@ -95,3 +95,7 @@ GET /history/ → return user's records
 ```
 
 # GenAI Logic
+
+The application offers basic GenAI logic in the form of an AI Coding Tutor. The application has two main functions:
+- User inputs code and chooses to have the code either `explained`, `reviewed` or `improved` by the LLM.
+- User uploads a file (`.txt`, `.py` or `.md`) which is then split in indexed chunks. S\he can then ask questions about the selected file to RAG Assistant, which only answers based on context from this document.
