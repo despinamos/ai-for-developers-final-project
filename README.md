@@ -9,6 +9,89 @@ The application supports JWT Authentication.
 
 # Tech Stack:
 
-# Prerequisites:
+Python version 3.13.5 (Minimum version Python 3.11+)
 
-# Instructions for Deployment (Local):
+# Installation:
+
+## Clone Repository
+Run in terminal
+```
+git clone https://github.com/despinamos/ai-for-developers-final-project.git
+```
+
+## Create Virtual Environment (venv) and activate it
+
+```
+python -m venv venv
+```
+```
+venv\Scripts\activate
+```
+
+## Install requirements.txt
+
+```
+pip install -r requirements.txt
+```
+
+# Instructions for Deployment:
+
+## Run backend
+Run in terminal (runs on port 8000)
+```
+uvicorn app.main:app --reload
+```
+
+## Run UI
+Open a second terminal and run UI on default port 7860
+```
+python gradio_app.py
+```
+
+# OpenAPI documentation
+To view the full API documentation, visit:
+```
+http://127.0.0.1:8000/docs#/
+```
+
+# API Endpoints
+
+## Login
+
+```
+POST /auth/login → validate credentials, return JWT access token.
+```
+
+## Users
+```
+POST /users/register → create a new user
+GET  /users/me       → current user info (auth required)
+GET  /users/admin    → admin-only endpoint
+```
+
+## AI
+```
+POST /ai/explain → explain user's code
+POST /ai/review → review user's code
+POST /ai/improve → improve user's code
+
+POST /ai/explain/stream → explain user's code with stream response
+POST /ai/review/stream → review user's code with stream response
+POST /ai/improve/stream → improve user's code with stream response
+```
+
+## RAG Assistant
+
+```
+POST /rag/upload → upload new document
+GET /rag/documents → get documents uploaded by current user
+POST /rag/ask → ask a question to Rag Assistant and return simple answer
+POST /rag/ask/stream → ask a question to Rag Assistant and return streaming response
+```
+
+## History
+```
+GET /history/ → return user's records
+```
+
+# GenAI Logic
