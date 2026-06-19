@@ -1,9 +1,15 @@
+"""
+RAG Document Model — SQLModel table definition.
+"""
+
+
 from datetime import datetime, UTC
 from typing import Optional
 from sqlmodel import SQLModel, Field
 
 
 class RagDocument(SQLModel, table=True):
+    """Document uploaded by use to RAG assistant."""
     id: Optional[int] = Field(default=None, primary_key=True)
 
     document_id: str = Field(index=True, unique=True)

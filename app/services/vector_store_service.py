@@ -1,3 +1,11 @@
+"""
+Vector Store Service - Handles storing and searching document embeddings using ChromaDB.
+
+Provides:
+  - add_chunks(chunks: list, filename, user_id) → returns dictionary of documents and the number of chunks it created from it
+  - search(query, document_id, top_k, user_id) → searches vector database for relevant document chunks based on the query and returns them.
+"""
+
 import uuid
 import chromadb
 
@@ -14,6 +22,7 @@ class VectorStoreService:
         filename: str,
         user_id: int | None = None
     ) -> dict:
+        """Stores document chunks and their embeddings in the vector database."""
         
         document_id = str(uuid.uuid4())
 
@@ -51,6 +60,7 @@ class VectorStoreService:
         top_k: int = 4,
         user_id: int | None = None
     ) -> list[str]:
+        """Searches the vector database for the most relevant document chunks."""
         query_embedding = EmbeddingService.embed_text(query)
 
         results = VectorStoreService._collection.query(

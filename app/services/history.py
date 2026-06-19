@@ -1,3 +1,10 @@
+"""
+History Service
+
+Provides:
+  - save(session, user_id, action, input_text, ai_response) → saves a record of user's action
+"""
+
 from sqlmodel import Session
 from app.models.history import History
 

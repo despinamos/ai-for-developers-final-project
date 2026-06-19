@@ -1,3 +1,11 @@
+"""
+Embedding Service - Creates an embedder through OpenAIEmbeddings
+
+Provides:
+  - embed_text(text) → Converts a text string into embedding vector.
+  - embed_textx(text: list) → Converts multiple text chunks into embedding vectors.
+"""
+
 from langchain_openai import OpenAIEmbeddings
 
 EMBED_MODEL = "text-embedding-3-small"

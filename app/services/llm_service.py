@@ -1,3 +1,15 @@
+"""
+LLM Service
+
+Provides: 
+  - explain_code(system_prompt, code, language, level) → calls LLM Client chat method
+  - explain_code_stream(system_prompt, code, language, level) → calls LLM Client stream chat method
+  - review_code(system_prompt, code, language, level) → calls LLM Client chat method
+  - review_code_stream(system_prompt, code, language, level) → calls LLM Client stream chat method
+  - improve_code(system_prompt, code, language, level) → calls LLM Client chat method
+  - improve_code_stream(system_prompt, code, language, level) → calls LLM Client stream chat method
+"""
+
 from app.llm_client import LLMClient
 
 from app.prompts.explain_prompt import EXPLAIN_PROMPT
