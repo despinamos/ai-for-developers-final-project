@@ -1,3 +1,12 @@
+"""
+RAG Service
+
+Provides:
+  - index_uploaded_file(file: UploadFile, user_id) → indexes user uploaded file into chunks
+  - answer_question(question, document_id, user_id, top_k) → answer question with simple response
+  - answer_question_stream(question, document_id, user_id, top_k) → answer question with streaming response
+"""
+
 from fastapi import UploadFile
 
 from app.services.document_service import DocumentService
