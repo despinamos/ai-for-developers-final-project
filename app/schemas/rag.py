@@ -1,3 +1,7 @@
+"""
+RAG Schemas — Pydantic models for RAG.
+"""
+
 from pydantic import BaseModel, Field
 
 class RAGQuestionRequest(BaseModel):

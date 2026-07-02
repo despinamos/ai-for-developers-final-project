@@ -1,5 +1,5 @@
 """
-Request and response models for code improving AI function.
+Improve Schemas — Request and response pydantic models for code improving with AI.
 """
 
 from typing import Optional

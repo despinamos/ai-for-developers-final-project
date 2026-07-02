@@ -1,5 +1,5 @@
 """
-Request and response models for code reviewing AI function.
+Review Schemas — Request and response pydantic models for code reviewing with AI.
 """
 
 from typing import Optional

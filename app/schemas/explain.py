@@ -1,5 +1,5 @@
 """
-Request and response models for code explainator AI function.
+Explain Schemas — Request and response pydantic models for code explaination with AI.
 """
 
 from typing import Optional
