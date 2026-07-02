@@ -4,7 +4,9 @@ Language: {language}
 Level: {level}
 
 The improved code must be:
+
 - Similar in philosophy with the original one
+- Cleaner, more efficient or a more maintainable version of the original one
 - Do not add extra functionalities unless absolutely necessary
 - Explain each change and improvement made thoroughly to the programmer
 - Improve the code according to the user's level
